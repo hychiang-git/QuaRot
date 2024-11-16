@@ -3,6 +3,7 @@ import quarot
 import quarot.transformers
 import torch
 from transformers import LlamaConfig
+from transformers.modeling_flash_attention_utils import _flash_attention_forward
 from transformers.models.llama.modeling_llama import LlamaAttention, \
 LlamaFlashAttention2, LlamaForCausalLM, apply_rotary_pos_emb, LlamaMLP
 from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
@@ -21,6 +22,7 @@ class QuarotFP16LlamaAttention(LlamaFlashAttention2):
         super().__init__(*args, **kwargs)
         self.quantizer = torch.nn.Identity()
         self.o_proj_hadamard = torch.nn.Identity()
+        self.is_causal = True
 
     def forward(
         self,
@@ -52,7 +54,8 @@ class QuarotFP16LlamaAttention(LlamaFlashAttention2):
 
         kv_seq_len = key_states.shape[1]
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
-        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        # cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        cos, sin = self.rotary_emb(value_states, position_ids=position_ids)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids, unsqueeze_dim=2)
 
         past_key_value = getattr(self, "past_key_value", past_key_value)
@@ -69,12 +72,14 @@ class QuarotFP16LlamaAttention(LlamaFlashAttention2):
 
         if isinstance(cache_out, tuple):
             key_states, value_states = cache_out
-            attn_output = self._flash_attention_forward(
+            # attn_output = self._flash_attention_forward(
+            attn_output = _flash_attention_forward(
                 query_states, 
                 key_states, 
                 value_states, 
                 query_length=q_len, 
-                attention_mask=attention_mask
+                attention_mask=attention_mask,
+                is_causal=self.is_causal,
             )
         else:
             attn_output = cache_out(query_states)

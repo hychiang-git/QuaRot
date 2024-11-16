@@ -285,5 +285,10 @@ class MultiLayerPagedKVCache4Bit(Cache):
         """Returns the maximum sequence length of the cached states, if there is any."""
         return None
 
+    # https://github.com/huggingface/transformers/blob/13493215abceafc1653af88b045120014fb4c1fc/src/transformers/cache_utils.py#L351
+    def get_max_cache_shape(self) -> Optional[int]:
+        """Returns the maximum sequence length of the cache object. DynamicCache does not have a maximum length."""
+        return None
+
     def to_legacy_cache(self):
         return self
