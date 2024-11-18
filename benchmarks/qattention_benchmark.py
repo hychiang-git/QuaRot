@@ -7,6 +7,7 @@ import time
 from quarot.transformers.kv_cache import MultiLayerPagedKVCache4Bit
 
 model_sizes = [
+    (28, 8, 128), #llama-3.2-3B
     (32, 32, 128), #llama-7b
     (40, 40, 128), #llama-13b
     (80, 64, 128)  #llama-70b   

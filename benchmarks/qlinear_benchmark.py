@@ -6,12 +6,14 @@ import numpy as np
 import pprint
 
 model_sizes = [
+    (3072, 3072), #llama-3.2-3B
     (4096, 4096), #llama-7b
     (5120, 5120), #llama-13b
     (8192, 8192)  #llama-70b   
 ]
 
 mlp_sizes = [
+    (3072, 8192), #llama-3.2-3B
     (4096, 11008), #llama-7b
     (5120, 13824), #llama-13b
     (8192, 28672)  #llama-70b
