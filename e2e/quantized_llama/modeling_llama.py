@@ -139,12 +139,15 @@ class QuarotFP16LlamaForCausalLM(LlamaForCausalLM):
         dtype = self.cache_dtype or self.model.layers[0].self_attn.v_proj.weight.dtype
         
         num_heads = self.config.num_key_value_heads
-        # this does not work for Llama-3.2-3B
-        # in Llama-3.2-3B config:  the hidden_size = headdim * num_key_value_heads * 3 (Q+K+V)
-        # in Llama-2-7b-hf config: the hidden_size = headdim * num_key_value_heads  (Q == K == V)
+        # this does not work for Llama-3.2-3B, Llama-3.2 use group attention
+        # hidden_size=3072, num_key_value_heads=8, head_dim=128
+        # query: [bsize, seqlen, 3072] value: [bsize, seqlen, 1024] key: [bsize, seqlen, 1024]
+        # Llama-2-7b-hf: the hidden_size = headdim * num_key_value_heads  (Q == K == V)
+        # hidden_size=4096, num_key_value_heads=32, head_dim=128
+        # query: [bsize, seqlen, 4096] value: [bsize, seqlen, 4096] key: [bsize, seqlen, 4096]
         # model_dim = self.config.hidden_size
         # head_dim = model_dim // num_heads
-        head_dim = self.config.head_dim
+        head_dim = self.config.head_dim # use config {..., "head_dim": 128, ...}
         disable_quant = self.cache_dtype == "float16" 
         return quarot.transformers.MultiLayerPagedKVCache4Bit(
             batch_size=batch_size,

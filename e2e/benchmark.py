@@ -10,8 +10,8 @@ import torch
 import transformers
 
 model_configs = [
-    # "meta-llama/Llama-3.2-3B",
-    "meta-llama/Llama-2-7b-hf",
+    "meta-llama/Llama-3.2-3B",
+    # "meta-llama/Llama-2-7b-hf",
     # "meta-llama/Llama-2-13b-hf", 
     # "meta-llama/Llama-2-70b-hf", 
 ]
