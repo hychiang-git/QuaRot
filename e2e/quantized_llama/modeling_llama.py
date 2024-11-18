@@ -130,8 +130,7 @@ class QuarotFP16LlamaForCausalLM(LlamaForCausalLM):
         assert config._attn_implementation == "flash_attention_2"
         for layer_idx, layer in enumerate(self.model.layers):
             layer.self_attn = QuarotFP16LlamaAttention(config=config, layer_idx=layer_idx)
-        # self.cache_dtype = "float16"
-        self.cache_dtype = "Int4"
+        self.cache_dtype = "float16"
         self._expected_max_length = None
 
         
